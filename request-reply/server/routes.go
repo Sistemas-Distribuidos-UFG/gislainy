@@ -1,7 +1,7 @@
 package main
 
 import (
-	"fmt"
+	"github.com/mitchellh/mapstructure"
 	"net/http"
 	"github.com/gorilla/mux"
 	"encoding/json"
@@ -14,160 +14,159 @@ import (
 func CreateAllRouter() *mux.Router  {
 	router := mux.NewRouter()
 
-	router.HandleFunc("/calculate-readjust-salary", handleCalculateReajustSalary)
-	router.HandleFunc("/check-legal-age", handleCheckLegalAge)
-	router.HandleFunc("/calculate-result-final", handleCalculateFinalResult)
-	router.HandleFunc("/calculate-ideal-weight", handleCalculateIdealWeight)
+	router.
+		HandleFunc("/calculate-readjust-salary", handleCalculateReajustSalary).
+		Methods(http.MethodPost)
+
+	router.
+		HandleFunc("/check-legal-age", handleCheckLegalAge).
+		Methods(http.MethodPost)
+	router.
+		HandleFunc("/calculate-result-final", handleCalculateFinalResult).
+		Methods(http.MethodPost)
+
+	router.
+		HandleFunc("/calculate-ideal-weight", handleCalculateIdealWeight).
+		Methods(http.MethodPost)
 
 	return router;
 }
 
-func handleCalculateReajustSalary (w http.ResponseWriter, r *http.Request) {
-	switch r.Method {
-	case http.MethodPost:
-		var employee Employee
-		
-		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+func UnmarshalBody(r *http.Request, model *map[string]interface{}) error {
 
-		body, err := ioutil.ReadAll(r.Body)
+	body, err := ioutil.ReadAll(r.Body)
 
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
-		}
-		
-		if err := r.Body.Close(); err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
-		}
-
-		if err := json.Unmarshal(body, &employee); err != nil {
-			w.WriteHeader(http.StatusUnprocessableEntity)
-			http.Error(w, err.Error(), http.StatusBadRequest)
-			return
-		}
-
-
-		result := CalculateReajustSalary(employee)
-
-		w.WriteHeader(http.StatusOK)
-
-		if err := json.NewEncoder(w).Encode(result); err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
-		}
-		
-	default:
-		fmt.Fprintf(w, "Method %s not supported", r.Method)
+	if err != nil {
+		return err;
 	}
+	
+	if err := r.Body.Close(); err != nil {
+		return err;
+	}
+
+	if err := json.Unmarshal(body, &model); err != nil {
+		return err;
+	}
+	
+	return nil
+
+}
+
+func handleCalculateReajustSalary (w http.ResponseWriter, r *http.Request) {
+	
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+
+	var request map[string]interface{}
+	var employee Employee
+
+	err := UnmarshalBody(r, &request);
+	
+	if err != nil {
+		w.WriteHeader(http.StatusUnprocessableEntity)
+		http.Error(w, err.Error(), http.StatusBadRequest)
+	}
+
+	mapstructure.Decode(request, &employee)
+	
+	result := CalculateReajustSalary(employee)
+
+	w.WriteHeader(http.StatusOK)
+
+	if err := json.NewEncoder(w).Encode(result); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+	}
+		
 }
 
 func handleCheckLegalAge (w http.ResponseWriter, r *http.Request) {
-	switch r.Method {
-	case http.MethodPost:
-		var person PersonLegalAge
-		
-		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 
-		body, err := ioutil.ReadAll(r.Body)
+	
+	
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
-		}
-		
-		if err := r.Body.Close(); err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
-		}
+	var request map[string]interface{}
+	var person PersonLegalAge
 
-		if err := json.Unmarshal(body, &person); err != nil {
-			w.WriteHeader(http.StatusUnprocessableEntity)
-			http.Error(w, err.Error(), http.StatusBadRequest)
-			return
-		}
-
-
-		result := CheckLegalAge(person)
-
-		w.WriteHeader(http.StatusOK)
-
-		if err := json.NewEncoder(w).Encode(result); err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
-		}
-		
-	default:
-		fmt.Fprintf(w, "Method %s not supported", r.Method)
+	err := UnmarshalBody(r, &request);
+	
+	if err != nil {
+		w.WriteHeader(http.StatusUnprocessableEntity)
+		http.Error(w, err.Error(), http.StatusBadRequest)
 	}
+
+	mapstructure.Decode(request, &person)
+	
+	result := CheckLegalAge(person)
+
+	w.WriteHeader(http.StatusOK)
+
+	if err := json.NewEncoder(w).Encode(result); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+	}
+		
+
 }
 
 func handleCalculateFinalResult (w http.ResponseWriter, r *http.Request) {
-	switch r.Method {
-	case http.MethodPost:
-		var sn StudentNotes
-		
-		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-
-		body, err := ioutil.ReadAll(r.Body)
-
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
-		}
-		
-		if err := r.Body.Close(); err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
-		}
-
-		if err := json.Unmarshal(body, &sn); err != nil {
-			w.WriteHeader(http.StatusUnprocessableEntity)
-			http.Error(w, err.Error(), http.StatusBadRequest)
-			return
-		}
 
 
-		result := CalculateFinalResult(sn)
+	
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 
-		w.WriteHeader(http.StatusOK)
+	var request map[string]interface{}
+	var sn StudentNotes
 
-		if err := json.NewEncoder(w).Encode(result); err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
-		}
-		
-	default:
-		fmt.Fprintf(w, "Method %s not supported", r.Method)
+	err := UnmarshalBody(r, &request);
+	
+	if err != nil {
+		w.WriteHeader(http.StatusUnprocessableEntity)
+		http.Error(w, err.Error(), http.StatusBadRequest)
 	}
+
+	mapstructure.Decode(request, &sn)
+
+	result := CalculateFinalResult(sn)
+
+	w.WriteHeader(http.StatusOK)
+
+	if err := json.NewEncoder(w).Encode(result); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+	}
+	
+	
 }
 
 func handleCalculateIdealWeight (w http.ResponseWriter, r *http.Request) {
-	switch r.Method {
-	case http.MethodPost:
-		var person PersonWeight
-		
-		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 
-		body, err := ioutil.ReadAll(r.Body)
+	var person PersonWeight
+	
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
-		}
-		
-		if err := r.Body.Close(); err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
-		}
+	body, err := ioutil.ReadAll(r.Body)
 
-		if err := json.Unmarshal(body, &person); err != nil {
-			w.WriteHeader(http.StatusUnprocessableEntity)
-			http.Error(w, err.Error(), http.StatusBadRequest)
-			return
-		}
-
-
-		result := CalculateIdealWeight(person)
-
-		w.WriteHeader(http.StatusOK)
-
-		if err := json.NewEncoder(w).Encode(result); err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
-		}
-		
-	default:
-		fmt.Fprintf(w, "Method %s not supported", r.Method)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
 	}
+	
+	if err := r.Body.Close(); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+	}
+
+	if err := json.Unmarshal(body, &person); err != nil {
+		w.WriteHeader(http.StatusUnprocessableEntity)
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	result := CalculateIdealWeight(person)
+
+	w.WriteHeader(http.StatusOK)
+
+	if err := json.NewEncoder(w).Encode(result); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+	}
+	
+	
 }
 
 
