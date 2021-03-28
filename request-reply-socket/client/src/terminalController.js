@@ -27,7 +27,7 @@ export default class TerminalController {
     #onInputReceived (eventEmitter) {
         return function () {
             const message = this.getValue()
-            eventEmitter.emit(constants.events.app.MESSAGE_SEND, message)
+            eventEmitter.emit(constants.events.app.MESSAGE_SEND, { message, userName: "x" })
             this.clearValue()
         }
     }
@@ -75,7 +75,7 @@ export default class TerminalController {
 
     async initializeTable (eventEmitter) {
         const components = new ComponentsBuilder()
-            .setScreen({ title: "HackerChat - Week JS Expert" })
+            .setScreen({ title: "Chat by Socket" })
             .setLayoutComponent()
             .setInputComponent(this.#onInputReceived(eventEmitter))
             .setChatComponent()
