@@ -1,10 +1,10 @@
 package main
 
 import (
-	"fmt"
-	"net/rpc"
 	"bufio"
+	"fmt"
 	"log"
+	"net/rpc"
 	"os"
 	"strings"
 	"sync"
@@ -12,13 +12,14 @@ import (
 )
 
 type Client struct {
-	nickname string
-	Connection   *rpc.Client
+	nickname   string
+	Connection *rpc.Client
 }
 type Message struct {
-	Nickname   string
-	Text string
+	Nickname string
+	Text     string
 }
+
 var wg sync.WaitGroup
 
 const (
@@ -32,10 +33,11 @@ const (
 		CMD_CREATE + " nickname - create a user named nickame\n" +
 		CMD_LIST + " - lists all users\n" +
 		CMD_HELP + " - lists all commands\n" +
-		CMD_QUIT + " - quits the program\n" + 
+		CMD_QUIT + " - quits the program\n" +
 		"write your message\n"
 	MSG_DISCONNECT = "Disconnected from the server.\n"
 )
+
 func (c *Client) CreateConnection() {
 	connection, err := rpc.Dial("tcp", "127.0.0.1:9999")
 	if err != nil {
@@ -69,23 +71,22 @@ func (c *Client) Input() {
 		if strings.HasPrefix(str, CMD_CREATE) {
 			c.CreateUser(str)
 		} else if strings.HasPrefix(str, CMD_LIST) {
-			c.ConnectedUsersList() 
+			c.ConnectedUsersList()
 		} else if strings.HasPrefix(str, CMD_QUIT) {
-			c.Quit() 
+			c.Quit()
 		} else if strings.HasPrefix(str, CMD_HELP) {
-			c.Help() 
-		} else if len(str) > 1 && len(c.nickname) > 0  {
-			c.SendMessage(str)	
-		} else if( len(c.nickname) == 0) {
+			c.Help()
+		} else if len(str) > 1 && len(c.nickname) > 0 {
+			c.SendMessage(str)
+		} else if len(c.nickname) == 0 {
 			fmt.Println("Create a user with ==> " + CMD_CREATE)
 		}
 	}
 }
 
-
 func (c *Client) CreateUser(str string) {
-	var message string		
-	nickname := strings.TrimSuffix(strings.TrimPrefix(str, CMD_CREATE + " "), "\n")
+	var message string
+	nickname := strings.TrimSuffix(strings.TrimPrefix(str, CMD_CREATE+" "), "\n")
 	c.nickname = nickname
 	err := c.Connection.Call("ChatServer.CreateUser", nickname, &message)
 	if err != nil {
@@ -94,7 +95,7 @@ func (c *Client) CreateUser(str string) {
 	fmt.Print(message)
 }
 func (c *Client) ConnectedUsersList() {
-	var message string		
+	var message string
 	err := c.Connection.Call("ChatServer.ConnectedUsersList", true, &message)
 	if err != nil {
 		wg.Done()
@@ -103,7 +104,7 @@ func (c *Client) ConnectedUsersList() {
 }
 
 func (c *Client) Quit() {
-	var message string		
+	var message string
 	err := c.Connection.Call("ChatServer.Quit", c.nickname, &message)
 	if err != nil {
 		wg.Done()
@@ -114,10 +115,10 @@ func (c *Client) Help() {
 	fmt.Println(MSG_HELP)
 }
 func (c *Client) SendMessage(str string) {
-	var message string			
+	var message string
 	text := Message{
 		Nickname: c.nickname,
-		Text: str,
+		Text:     str,
 	}
 	err := c.Connection.Call("ChatServer.SendMessage", text, &message)
 	if err != nil {
@@ -125,8 +126,6 @@ func (c *Client) SendMessage(str string) {
 	}
 	fmt.Print(message)
 }
-
-
 
 func main() {
 	var client *Client = &Client{}

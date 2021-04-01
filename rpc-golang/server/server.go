@@ -10,13 +10,13 @@ import (
 type Nothing bool
 
 type ChatServer struct {
-	users []string
+	users        []string
 	messageQueue map[string][]string
-	mutex sync.Mutex
-} 
+	mutex        sync.Mutex
+}
 type Message struct {
-	Nickname   string
-	Text string
+	Nickname string
+	Text     string
 }
 
 func (chat *ChatServer) CreateUser(nickname string, reply *string) error {
@@ -25,14 +25,14 @@ func (chat *ChatServer) CreateUser(nickname string, reply *string) error {
 	for _, value := range chat.users {
 		if value == nickname {
 			*reply = "Already user\n"
-			return nil	
+			return nil
 		}
 	}
 	chat.users = append(chat.users, nickname)
-	chat.messageQueue[nickname] = nil;
+	chat.messageQueue[nickname] = nil
 	for k, _ := range chat.messageQueue {
-		if(k != nickname) {
-			chat.messageQueue[k] = append(chat.messageQueue[k], nickname+ " has joined.")
+		if k != nickname {
+			chat.messageQueue[k] = append(chat.messageQueue[k], nickname+" has joined.")
 		}
 	}
 	*reply = "User create with success\n"
@@ -52,7 +52,7 @@ func (chat *ChatServer) CheckMessages(nickname string, reply *[]string) error {
 	chat.messageQueue[nickname] = nil
 	return nil
 }
-func (chat *ChatServer) Quit(nickname string,  reply *string) error {
+func (chat *ChatServer) Quit(nickname string, reply *string) error {
 	chat.mutex.Lock()
 	defer chat.mutex.Unlock()
 	delete(chat.messageQueue, nickname)
@@ -67,11 +67,11 @@ func (chat *ChatServer) Quit(nickname string,  reply *string) error {
 	*reply = "User " + nickname + " has logged out."
 	return nil
 }
-func (chat *ChatServer) SendMessage(message Message,  reply *string) error {
+func (chat *ChatServer) SendMessage(message Message, reply *string) error {
 	chat.mutex.Lock()
 	defer chat.mutex.Unlock()
 	for k, _ := range chat.messageQueue {
-		chat.messageQueue[k] = append(chat.messageQueue[k], message.Nickname + ": " + message.Text)
+		chat.messageQueue[k] = append(chat.messageQueue[k], message.Nickname+": "+message.Text)
 	}
 	return nil
 }
