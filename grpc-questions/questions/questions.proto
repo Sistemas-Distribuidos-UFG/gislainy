@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+option go_package = "github.com/gislainy/course-distributed-systems/grpc-questions/proto/questions";
+
+package questions;
+
+service Questions {
+    rpc CalculateReajustSalary(Employee) returns (Employee) {}
+}
+
+message Response {
+    string message = 1;
+}
+
+message Employee {
+    string name = 1;
+    string role = 2;
+    float salary = 3;
+}
