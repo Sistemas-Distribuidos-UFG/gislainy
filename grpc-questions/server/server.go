@@ -19,6 +19,7 @@ const (
 )
 
 func (s *QuestionsServer) CalculateReajustSalary(ctx context.Context, employee *pb.Employee) (*pb.Employee, error) {
+	fmt.Printf("[CalculateReajustSalary] Received %v\n", employee)
 	return CalculateReajustSalary(employee), nil
 }
 
@@ -30,6 +31,7 @@ func CalculateReajustSalary(employee *pb.Employee) *pb.Employee {
 	case "Developer":
 		employee.Salary *= 1.18
 	}
+	fmt.Printf("[CalculateReajustSalary] Returned %v\n", employee)
 	return &pb.Employee{
 		Name:   employee.Name,
 		Role:   employee.Role,
