@@ -27,7 +27,7 @@ $ node server.js
 
 Para iniciar um processo cliente, basta: 
 ```
-$ node server.js
+$ node client.js
 ```
 
 ## Exemplo
